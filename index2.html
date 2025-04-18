@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Scheduling Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0; /* Light text */
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            padding: 2rem;
+            background-color: #1e1e1e; /* Dark container */
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); /* Softer shadow */
+        }
+        #input-section, #algorithm-section, #visualization-section, #results-section, #explanation-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #2a2a2a; /* Dark sections */
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Even softer shadow */
+        }
+        .process {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid #444; /* Lighter border */
+            border-radius: 0.375rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+        .process label {
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            color: #e0e0e0; /* Light text */
+        }
+        .process input {
+            padding: 0.75rem;
+            border: 1px solid #555; /* Lighter input border */
+            border-radius: 0.375rem;
+            width: 10rem;
+            font-size: 1rem;
+            background-color: #333; /* Dark input background */
+            color: #e0e0e0; /* Light text */
+        }
+        .process input:focus {
+            outline: none;
+            border-color: #4299e1; /* Focus border color */
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2); /* Focus shadow */
+        }
+        .remove-process {
+            padding: 0.5rem 1rem;
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 0.875rem;
+        }
+        .remove-process:hover {
+            background-color: #c81e1e;
+        }
+        #add-process {
+            padding: 0.75rem 1.5rem;
+            background-color: #38a169;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        #add-process:hover {
+            background-color: #2a744e;
+        }
+        #algorithm-section select {
+            padding: 0.75rem;
+            border: 1px solid #555; /* Lighter select border */
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            background-color: #333; /* Dark select background */
+            color: #e0e0e0; /* Light text */
+        }
+        #algorithm-section select:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+        #algorithm-section label {
+            margin-left: 1rem;
+            margin-right: 0.5rem;
+            font-size: 1rem;
+            color: #e0e0e0; /* Light text */
+        }
+        #algorithm-section input {
+            padding: 0.75rem;
+            border: 1px solid #555; /* Lighter input border */
+            border-radius: 0.375rem;
+            width: 5rem;
+            font-size: 1rem;
+            background-color: #333; /* Dark input background */
+            color: #e0e0e0; /* Light text */
+        }
+        #algorithm-section input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+        #run-simulation {
+            padding: 0.75rem 1.5rem;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        #run-simulation:hover {
+            background-color: #3182ce;
+        }
+        #gantt-chart {
+            border: 1px solid #444; /* Lighter chart border */
+            border-radius: 0.375rem;
+            background-color: #333; /* Dark chart background */
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            margin: 0 auto;
+        }
+        #results-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            border-radius: 0.375rem;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Very subtle shadow */
+            border: 1px solid #444; /* Lighter table border */
+        }
+        #results-section th, #results-section td {
+            border: 1px solid #444; /* Lighter cell border */
+            padding: 0.75rem;
+            text-align: left;
+            color: #e0e0e0; /* Light text */
+        }
+        #results-section th {
+            background-color: #2a2a2a; /* Darker header */
+            font-weight: 600;
+        }
+        #results-section tbody tr:nth-child(odd) {
+            background-color: #3a3a3a; /* Darker odd rows */
+        }
+        #results-section tbody tr:hover {
+            background-color: #4a4a4a; /* Slightly lighter hover */
+        }
+        #results-section p {
+            margin-top: 0.75rem;
+            font-size: 1rem;
+            color: #e0e0e0; /* Light text */
+        }
+        #explanation-section h2 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #e0e0e0; /* Light text */
+        }
+        #explanation-section p {
+            font-size: 1rem;
+            line-height: 1.75;
+            color: #ccc; /* Slightly lighter text */
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background-color: #444; /* Darker tab background */
+            color: #e0e0e0; /* Light tab text */
+            border-top-left-radius: 0.375rem;
+            border-top-right-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-right: 0.25rem;
+            border: 1px solid #555; /* Lighter tab border */
+            border-bottom: none;
+        }
+        .tab:hover {
+            background-color: #555; /* Slightly lighter tab hover */
+        }
+        .tab.active {
+            background-color: #1e1e1e; /* Active tab background */
+            color: #e0e0e0; /* Dark active tab text */
+            font-weight: 600;
+            border-bottom: 1px solid #1e1e1e; /* Match active tab bottom border */
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .flowchart-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            overflow-x: auto;
+            width: 100%;
+        }
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #444; /* Lighter flowchart border */
+            border-radius: 0.5rem;
+            background-color: #333; /* Dark flowchart background */
+            margin: 0 auto;
+            max-width: 800px;
+            width: 100%;
+        }
+        .flowchart-node {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0.375rem;
+            background-color: #444; /* Darker node background */
+            border: 1px solid #555; /* Lighter node border */
+            width: 100%;
+            text-align: center;
+            color: #e0e0e0; /* Light text */
+        }
+        .flowchart-connector {
+            width: 0.25rem;
+            height: 2rem;
+            background-color: #555; /* Lighter connector */
+            margin-bottom: 1rem;
+            align-self: center;
+        }
+        .flowchart-decision {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0.375rem;
+            background-color: #fca5a5; /* Light red decision */
+            border: 1px solid #fca5a5;
+            width: 100%;
+            text-align: center;
+            color: #333; /* Dark text for decision */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-2xl font-semibold text-gray-200 mb-4">CPU Scheduling Simulator</h1>
+        <div id="input-section">
+            <h2 class="text-xl font-semibold text-gray-200 mb-4">Process Input</h2>
+            <div id="processes">
+                <div class="process">
+                    <label>Process ID: <input type="text" class="process-id" value="P1"></label>
+                    <label>Arrival Time: <input type="number" class="arrival-time" value="0"></label>
+                    <label>Burst Time: <input type="number" class="burst-time" value="5"></label>
+                    <label>Priority: <input type="number" class="priority" value="1"></label>
+                    <button class="remove-process">Remove</button>
+                </div>
+            </div>
+            <button id="add-process">Add Process</button>
+        </div>
+        <div id="algorithm-section">
+            <h2 class="text-xl font-semibold text-gray-200 mb-4">Select Algorithm</h2>
+            <select id="algorithm">
+                <option value="fcfs">FCFS</option>
+                <option value="sjf">SJF</option>
+                <option value="priority">Priority</option>
+                <option value="round-robin">Round Robin</option>
+            </select>
+            <label id="quantum-label" style="display: none;">Quantum: <input type="number" id="quantum" value="2"></label>
+            <button id="run-simulation">Run Simulation</button>
+        </div>
+        <div id="visualization-section">
+            <h2 class="text-xl font-semibold text-gray-200 mb-4">Gantt Chart</h2>
+            <canvas id="gantt-chart"></canvas>
+        </div>
+        <div id="results-section">
+            <h2 class="text-xl font-semibold text-gray-200 mb-4">Results</h2>
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>Process ID</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Waiting Time</th>
+                        <th>Turnaround Time</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <p id="average-waiting"></p>
+            <p id="average-turnaround"></p>
+        </div>
+        <div id="explanation-section">
+            <h2 class="text-xl font-semibold text-gray-200 mb-4">Algorithm Explanation</h2>
+            <div class="tabs">
+                <div class="tab active" data-tab="fcfs">FCFS</div>
+                <div class="tab" data-tab="sjf">SJF</div>
+                <div class="tab" data-tab="priority">Priority</div>
+                <div class="tab" data-tab="round-robin">Round Robin</div>
+                <div class="tab" data-tab="flowchart">Flowchart</div>
+            </div>
+            <div class="tab-content active" id="fcfs">
+                <p>
+                    <b>First-Come, First-Served (FCFS):</b> Processes are executed in the order they arrive. It is the simplest scheduling algorithm.
+                    <br>
+                    <div>
+  <h3>Steps to Calculate FCFS Scheduling</h3>
+<ol>
+    <li><strong>Input Process Details</strong><br>
+        - Take input for Process ID, Arrival Time (AT), and Burst Time (BT).<br>
+        - Store these values in an array or table.</li>
+
+    <li><strong>Sort Processes by Arrival Time</strong><br>
+        - Arrange processes in ascending order of Arrival Time.<br>
+        - If two processes have the same Arrival Time, maintain their original order.</li>
+
+    <li><strong>Calculate Completion Time (CT)</strong><br>
+        - The first process starts execution as soon as it arrives.<br>
+        - Completion Time for each process is calculated as:<br>
+        &nbsp;&nbsp;<code>CT = Start Time + BT</code><br>
+        - Start Time for the first process is its Arrival Time.<br>
+        - For subsequent processes:<br>
+        &nbsp;&nbsp;<code>Start Time = max(previous process CT, current process AT)</code></li>
+
+    <li><strong>Calculate Turnaround Time (TAT)</strong><br>
+        - Turnaround Time is calculated as:<br>
+        &nbsp;&nbsp;<code>TAT = CT - AT</code></li>
+
+    <li><strong>Calculate Waiting Time (WT)</strong><br>
+        - Waiting Time is calculated as:<br>
+        &nbsp;&nbsp;<code>WT = TAT - BT</code></li>
+
+    <li><strong>Display Gantt Chart</strong><br>
+        - Visualize the execution sequence of processes with their start and completion times.</li>
+
+    <li><strong>Show Performance Metrics</strong><br>
+        - Compute and display Average Turnaround Time (Avg TAT) and Average Waiting Time (Avg WT).</li>
+</ol>
+
+<h3>Advantages:</h3>
+<ul>
+    <li>Easy to understand and implement.</li>
+    <li>Fair in the sense that processes are served in the order they arrive.</li>
+</ul>
+
+<h3>Disadvantages:</h3>
+<ul>
+    <li>Can lead to the convoy effect, where a long-running process blocks all other processes.</li>
+    <li>Not optimal in terms of minimizing average waiting time.</li>
+</ul>
+
+            <div class="tab-content" id="sjf">
+                <p>
+                    <b>Shortest Job First (SJF):</b> Processes with the shortest burst time are executed first.
+                    <br><br>
+                    <b>Advantages:</b>
+                    <ul>
+                        <li>Minimizes the average waiting time.</li>
+                        <li>Optimal in terms of minimizing average waiting time.</li>
+                    </ul>
+                    <b>Disadvantages:</b>
+                    <ul>
+                        <li>Requires knowledge of the burst time of each process in advance, which is not always possible.</li>
+                        <li>Can lead to starvation of long-running processes.</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="tab-content" id="priority">
+                <p>
+                    <b>Priority Scheduling:</b> Processes are executed based on their priority. Higher priority processes are executed first.
+                    <br><br>
+                    <b>Advantages:</b>
+                    <ul>
+                        <li>Allows important processes to be executed before less important ones.</li>
+                        <li>Flexible in the sense that priority can be assigned based on various criteria.</li>
+                    </ul>
+                    <b>Disadvantages:</b>
+                    <ul>
+                        <li>Can lead to starvation of low-priority processes.</li>
+                        <li>Requires assigning priorities to processes, which can be difficult.</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="tab-content" id="round-robin">
+                <p>
+                    <b>Round Robin:</b> Each process is given a fixed amount of time, called a time quantum. If a process does not complete within its time quantum, it is moved to the back of the queue.
+                    <br><br>
+                    <b>Advantages:</b>
+                    <ul>
+                        <li>Provides a more balanced and fair execution of processes.</li>
+                        <li>Prevents any one process from monopolizing the CPU.</li>
+                    </ul>
+                    <b>Disadvantages:</b>
+                    <ul>
+                        <li>Performance depends heavily on the choice of the time quantum.</li>
+                        <li>Can lead to increased overhead due to context switching.</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="tab-content" id="flowchart">
+                <div class="flowchart-container">
+                    <div class="flowchart">
+                        <div class="flowchart-node">Start</div>
+                        <div class="flowchart-connector"></div>
+                        <div class="flowchart-node" id="flowchart-input">Input Processes Data</div>
+                        <div class="flowchart-connector"></div>
+                        <div class="flowchart-node" id="flowchart-algorithm">Select Scheduling Algorithm</div>
+                        <div class="flowchart-connector"></div>
+                        <div class="flowchart-decision" id="flowchart-decision">
+                            Is Algorithm Round Robin?
+                        </div>
+                        <div class="flowchart-connector" id="flowchart-connector-yes"></div>
+                        <div class="flowchart-node" id="flowchart-quantum" style="display: none;">Input Time Quantum</div>
+                        <div class="flowchart-connector" id="flowchart-connector-quantum-to-algo" style="display: none;"></div>
+                        <div class="flowchart-node" id="flowchart-algorithm-execution">Execute Algorithm</div>
+                        <div class="flowchart-connector"></div>
+                        <div class="flowchart-node" id="flowchart-output">Display Gantt Chart and Results</div>
+                        <div class="flowchart-connector"></div>
+                        <div class="flowchart-node">End</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const processesDiv = document.getElementById('processes');
+            const addProcessButton = document.getElementById('add-process');
+            const algorithmSelect = document.getElementById('algorithm');
+            const quantumLabel = document.getElementById('quantum-label');
+            const quantumInput = document.getElementById('quantum');
+            const runSimulationButton = document.getElementById('run-simulation');
+            const ganttChartCanvas = document.getElementById('gantt-chart');
+            const resultsTableBody = document.querySelector('#results-table tbody');
+            const avgWaitingP = document.getElementById('average-waiting');
+            const avgTurnaroundP = document.getElementById('average-turnaround');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            // Flowchart elements
+            const flowchartQuantumNode = document.getElementById('flowchart-quantum');
+            const flowchartDecisionNode = document.getElementById('flowchart-decision');
+            const flowchartConnectorYes = document.getElementById('flowchart-connector-yes');
+            const flowchartConnectorQuantumToAlgo = document.getElementById('flowchart-connector-quantum-to-algo');
+            const flowchartAlgoExecution = document.getElementById('flowchart-algorithm-execution');
+
+            let processes = []; // Array to store process data
+            let context = ganttChartCanvas.getContext('2d');
+            let chartWidth;
+            let chartHeight;
+            const colors = ['#66b0ff', '#4CAF50', '#FFC107', '#FF5252', '#8E24AA', '#3F51B5'];
+
+            addProcessButton.addEventListener('click', () => {
+                const processDiv = document.createElement('div');
+                processDiv.className = 'process';
+                processDiv.innerHTML = `
+                    <label>Process ID: <input type="text" class="process-id" value="P${processesDiv.children.length + 1}"></label>
+                    <label>Arrival Time: <input type="number" class="arrival-time" value="0"></label>
+                    <label>Burst Time: <input type="number" class="burst-time" value="5"></label>
+                    <label>Priority: <input type="number" class="priority" value="1"></label>
+                    <button class="remove-process">Remove</button>
+                `;
+                processesDiv.appendChild(processDiv);
+
+                // Add animation class
+                setTimeout(() => {
+                    processDiv.classList.add('fade-in');
+                }, 0);
+
+                const removeButton = processDiv.querySelector('.remove-process');
+                removeButton.addEventListener('click', () => {
+                    // Add fade-out class before removing
+                    processDiv.classList.add('fade-out');
+                    setTimeout(() => {
+                        processesDiv.removeChild(processDiv);
+                        // Remove the process from the processes array
+                        processes = processes.filter(p => p.processId !== processDiv.querySelector('.process-id').value);
+                    }, 300);
+                });
+            });
+
+            algorithmSelect.addEventListener('change', () => {
+                if (algorithmSelect.value === 'round-robin') {
+                    quantumLabel.style.display = 'inline-block';
+                    flowchartQuantumNode.style.display = 'flex';
+                    flowchartConnectorYes.style.height = '2rem';
+                    flowchartConnectorQuantumToAlgo.style.display = 'block';
+                    flowchartAlgoExecution.style.marginTop = '2rem';
+                } else {
+                    quantumLabel.style.display = 'none';
+                    flowchartQuantumNode.style.display = 'none';
+                    flowchartConnectorYes.style.height = '4rem';
+                    flowchartConnectorQuantumToAlgo.style.display = 'none';
+                    flowchartAlgoExecution.style.marginTop = '0';
+                }
+            });
+
+            runSimulationButton.addEventListener('click', () => {
+                // Clear previous results
+                resultsTableBody.innerHTML = '';
+                avgWaitingP.textContent = '';
+                avgTurnaroundP.textContent = '';
+                context.clearRect(0, 0, ganttChartCanvas.width, ganttChartCanvas.height);
+
+                // Get process data from the form
+                processes = Array.from(processesDiv.children).map(processDiv => {
+                    return {
+                        processId: processDiv.querySelector('.process-id').value,
+                        arrivalTime: parseInt(processDiv.querySelector('.arrival-time').value),
+                        burstTime: parseInt(processDiv.querySelector('.burst-time').value),
+                        priority: parseInt(processDiv.querySelector('.priority').value),
+                    };
+                });
+                const algorithm = algorithmSelect.value;
+                const quantum = parseInt(quantumInput.value);
+
+                let results;
+                try {
+                    if (algorithm === 'fcfs') {
+                        results = fcfs(processes.slice());
+                    } else if (algorithm === 'sjf') {
+                        results = sjf(processes.slice());
+                    } else if (algorithm === 'priority') {
+                         results = priority(processes.slice());
+                    } else if (algorithm === 'round-robin') {
+                        results = roundRobin(processes.slice(), quantum);
+                    }
+                } catch (error) {
+                    console.error("Error during simulation:", error);
+                    alert("An error occurred during the simulation. Please check your input and try again.");
+                    return; // Stop execution if there's an error
+                }
+
+                displayResults(results);
+                drawGanttChart(results);
+            });
+
+            function fcfs(processes) {
+                processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+                let currentTime = 0;
+                let results = [];
+                processes.forEach(process => {
+                    const startTime = Math.max(currentTime, process.arrivalTime);
+                    const endTime = startTime + process.burstTime;
+                    results.push({ ...process,
+                        startTime,
+                        endTime,
+                        waitingTime: startTime - process.arrivalTime,
+                        turnaroundTime: endTime - process.arrivalTime
+                    });
+                    currentTime = endTime;
+                });
+                return results;
+            }
+
+            function sjf(processes) {
+                processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+                let currentTime = 0;
+                let results = [];
+                let queue = [];
+
+                while (processes.length > 0 || queue.length > 0) {
+                    // Add processes to the queue that have arrived
+                    while (processes.length > 0 && processes[0].arrivalTime <= currentTime) {
+                        queue.push(processes.shift());
+                    }
+                    // Sort the queue by burst time
+                    queue.sort((a, b) => a.burstTime - b.burstTime);
+
+                    if (queue.length === 0) {
+                        currentTime++;
+                        continue;
+                    }
+
+                    const process = queue.shift();
+                    const startTime = Math.max(currentTime, process.arrivalTime);
+                    const endTime = startTime + process.burstTime;
+                    results.push({ ...process,
+                        startTime,
+                        endTime,
+                        waitingTime: startTime - process.arrivalTime,
+                        turnaroundTime: endTime - process.arrivalTime
+                    });
+                    currentTime = endTime;
+                }
+                return results;
+            }
+
+            function priority(processes) {
+                 processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+                let currentTime = 0;
+                let results = [];
+                let queue = [];
+
+                while (processes.length > 0 || queue.length > 0) {
+                    // Add processes to the queue that have arrived
+                    while (processes.length > 0 && processes[0].arrivalTime <= currentTime) {
+                        queue.push(processes.shift());
+                    }
+                    // Sort the queue by priority (lower number means higher priority)
+                    queue.sort((a, b) => a.priority - b.priority);
+
+                    if (queue.length === 0) {
+                        currentTime++;
+                        continue;
+                    }
+
+                    const process = queue.shift();
+                    const startTime = Math.max(currentTime, process.arrivalTime);
+                    const endTime = startTime + process.burstTime;
+                    results.push({ ...process,
+                        startTime,
+                        endTime,
+                        waitingTime: startTime - process.arrivalTime,
+                        turnaroundTime: endTime - process.arrivalTime
+                    });
+                    currentTime = endTime;
+                }
+                return results;
+            }
+
+            function roundRobin(processes, quantum) {
+                processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+                let currentTime = 0;
+                let results = [];
+                let queue = [];
+                let remainingBurstTimes = {};
+
+                processes.forEach(process => {
+                    remainingBurstTimes[process.processId] = process.burstTime;
+                });
+
+                while (processes.length > 0 || queue.length > 0) {
+                    // Add processes to the queue that have arrived
+                    while (processes.length > 0 && processes[0].arrivalTime <= currentTime) {
+                        queue.push(processes.shift());
+                    }
+
+                    if (queue.length === 0) {
+                        currentTime++;
+                        continue;
+                    }
+
+                    const process = queue.shift();
+                    const startTime = currentTime;
+                    const quantumToUse = Math.min(quantum, remainingBurstTimes[process.processId]);
+                    currentTime += quantumToUse;
+                    remainingBurstTimes[process.processId] -= quantumToUse;
+
+                    if (remainingBurstTimes[process.processId] <= 0) {
+                        const endTime = currentTime;
+                        results.push({ ...process,
+                            startTime,
+                            endTime,
+                            waitingTime: endTime - process.arrivalTime - process.burstTime,
+                            turnaroundTime: endTime - process.arrivalTime
+                        });
+                    } else {
+                        queue.push(process);
+                    }
+                }
+                return results;
+            }
+
+            function displayResults(results) {
+                results.forEach(result => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${result.processId}</td>
+                        <td>${result.startTime}</td>
+                        <td>${result.endTime}</td>
+                        <td>${result.waitingTime}</td>
+                        <td>${result.turnaroundTime}</td>
+                    `;
+                    resultsTableBody.appendChild(row);
+                });
+
+                const totalWaitingTime = results.reduce((sum, result) => sum + result.waitingTime, 0);
+                const totalTurnaroundTime = results.reduce((sum, result) => sum + result.turnaroundTime, 0);
+                const avgWaitingTime = totalWaitingTime / results.length;
+                const avgTurnaroundTime = totalTurnaroundTime / results.length;
+
+                avgWaitingP.textContent = `Average Waiting Time: ${avgWaitingTime.toFixed(2)}`;
+                avgTurnaroundP.textContent = `Average Turnaround Time: ${avgTurnaroundTime.toFixed(2)}`;
+            }
+
+           function drawGanttChart(results) {
+                if (!results || results.length === 0) {
+                    ganttChartCanvas.style.display = 'none';
+                    return;
+                } else {
+                    ganttChartCanvas.style.display = 'block';
+                }
+
+                const canvas = ganttChartCanvas;
+                const context = canvas.getContext('2d');
+                const container = document.getElementById('visualization-section');
+                const maxWidth = container.clientWidth;
+                const maxHeight = 200; // Fixed height for Gantt chart
+
+                canvas.width = Math.min(maxWidth, 800); // Max width of 800
+                canvas.height = maxHeight;
+                chartWidth = canvas.width;
+                chartHeight = canvas.height;
+
+                const minStartTime = Math.min(...results.map(r => r.startTime));
+                const maxEndTime = Math.max(...results.map(r => r.endTime));
+                const totalTime = maxEndTime - minStartTime;
+
+                const timePadding = 10; // Add a small padding
+                const availableWidth = chartWidth - 2 * timePadding;
+                const barHeight = 40;
+                const startY = (chartHeight - barHeight) / 2;
+                const processGap = 10;
+
+                context.clearRect(0, 0, chartWidth, chartHeight);
+                context.font = '14px sans-serif';
+
+                results.forEach((result, index) => {
+                    const processWidth = (result.endTime - result.startTime) / totalTime * availableWidth;
+                    const startX = timePadding + (result.startTime - minStartTime) / totalTime * availableWidth;
+                    const color = colors[index % colors.length];
+
+                    context.fillStyle = color;
+                    context.fillRect(startX, startY, processWidth, barHeight);
+                    context.fillStyle = '#000';
+                    context.fillText(result.processId, startX + processWidth / 2 - 10, startY + barHeight / 2 + 5);
+                    context.strokeStyle = '#333';
+                    context.strokeRect(startX, startY, processWidth, barHeight);
+                });
+
+                // Draw time axis
+                context.fillStyle = '#e0e0e0'; // Light text for time axis
+                context.font = '12px sans-serif';
+                const numTicks = 5; // Number of time ticks
+                for (let i = 0; i <= numTicks; i++) {
+                    const time = minStartTime + i * (totalTime / numTicks);
+                    const x = timePadding + i * (availableWidth / numTicks);
+                    context.fillText(time.toFixed(0), x, chartHeight - 10);
+                }
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    const tabId = tab.dataset.tab;
+                    document.getElementById(tabId).classList.add('active');
+                    tab.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
