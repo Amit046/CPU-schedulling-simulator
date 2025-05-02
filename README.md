@@ -1,7 +1,7 @@
 # CPU-schedulling-simulator
 # 🔄 CPU Scheduling Simulator
 
-A simple and interactive **CPU Scheduling Simulator** built with **HTML**, **CSS**, and **JavaScript**. This tool helps you visualize how different CPU scheduling algorithms work and how they impact process performance.
+A simple and interactive **CPU Scheduling Simulator** built with **Python**. This tool helps you visualize how different CPU scheduling algorithms work and how they impact process performance.
 
 ## 📌 Description
 
